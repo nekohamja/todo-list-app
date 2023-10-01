@@ -1,0 +1,74 @@
+/* VARIABLES */
+:root {
+  --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family: "IBM Plex Sans", sans-serif;
+}
+
+/* DEFAULTS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  font-family: var(--font-family), var(--system-font);
+}
+body {
+  height: 100vh;
+}
+p {
+  margin: 0;
+  font-size: clamp(0.8rem, 0.8vw, 1.5rem);
+  width: clamp(45ch, 50%, 75ch);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1rem, 3vw, 3rem);
+  width: clamp(20ch, 50%, 40ch);
+}
+header {
+  display: flex;
+  padding: 22px;
+  gap: 22px;
+}
+main {
+  display: flex;
+  height: 100%;
+}
+nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: 22px;
+  flex: 1;
+
+  background-color: rgb(163, 163, 163);
+}
+
+/* LAYOUT */
+.todo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px;
+  flex: 3;
+  .todo-add {
+    width: 70%;
+    > *:not(#task) {
+      visibility: hidden;
+    }
+    #title,
+    #task {
+      width: 100%;
+    }
+    #checkbox.active,
+    #title.active,
+    #color.active {
+      visibility: visible;
+    }
+  }
+}

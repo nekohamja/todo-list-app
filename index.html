@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="main.js" defer></script>
+    <title>Todo</title>
+  </head>
+  <body>
+    <header>
+      <button>Toggle sidebar</button>
+      <h1>Todo</h1>
+    </header>
+
+    <main>
+      <nav>
+        <button>Tasks</button>
+        <button>Reminders</button>
+      </nav>
+      <section class="todo">
+        <div class="todo-add">
+          <input type="text" id="title" placeholder="Title" />
+          <input type="text" id="task" placeholder="Add task..." />
+          <button id="checkbox">Add Checkbox</button>
+          <input type="color" id="color" />
+        </div>
+        <div class="todo-list"></div>
+      </section>
+    </main>
+  </body>
+</html>
