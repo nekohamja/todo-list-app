@@ -3,6 +3,7 @@
   --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family: "IBM Plex Sans", sans-serif;
+  --mono-font: "IBM Plex Mono", monospace;
 }
 
 /* DEFAULTS */
@@ -26,11 +27,12 @@ p {
 }
 h1 {
   margin: 0;
-  font-size: clamp(1rem, 3vw, 3rem);
+  font-size: clamp(1.5rem, 3vw, 2rem);
   width: clamp(20ch, 50%, 40ch);
 }
 header {
   display: flex;
+  align-items: center;
   padding: 22px;
   gap: 22px;
 }
@@ -43,32 +45,166 @@ nav {
   flex-direction: column;
   align-items: flex-start;
   height: 100%;
-  padding: 22px;
-  flex: 1;
-
-  background-color: rgb(163, 163, 163);
+}
+label {
+  font-family: var(--mono-font);
+  font-size: 10px;
+  padding: 12px 0px;
+  letter-spacing: 4px;
 }
 
 /* LAYOUT */
+header {
+  border-bottom: 1px solid gray;
+  #button-toggle-nav {
+    display: flex;
+  }
+}
+
+nav {
+  display: flex;
+  background: white;
+  .button-project-default,
+  .button-project-new,
+  .button-project,
+  .left-panel {
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    height: 48px;
+    width: 100%;
+
+    gap: 22px;
+    > span,
+    .left-panel > span {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    > span,
+    .left-panel > span,
+    .right-panel > span {
+      display: none;
+    }
+    > span.active,
+    .left-panel > span.active,
+    .right-panel > span.active {
+      display: flex;
+    }
+  }
+  .button-project-default,
+  .button-project-new,
+  .button-project {
+    padding: 0px 22px;
+  }
+  .button-project-default:hover,
+  .button-project-new:hover,
+  .button-project:hover {
+    background-color: rgba(0, 0, 0, 0.068);
+  }
+  .add-project-popup {
+    display: none;
+    padding: 0px 22px;
+  }
+  .add-project-popup.active {
+    display: flex;
+    flex-wrap: wrap;
+    > input {
+      width: 100%;
+      height: 32px;
+      padding: 0px 12px;
+      outline: none;
+      border: 1px solid gray;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+      border-radius: 8px;
+    }
+    > div {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      > button {
+        border: none;
+        background: none;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 12px 24px;
+      }
+    }
+  }
+  .button-project-new.active {
+    display: none;
+  }
+  .user-projects-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    > span {
+      display: none;
+      font-family: var(--mono-font);
+      font-size: 10px;
+      padding: 12px 24px;
+      letter-spacing: 4px;
+    }
+    > span.active {
+      display: flex;
+    }
+    .button-project {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
+
 .todo {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 22px;
-  flex: 3;
   .todo-add {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     width: 70%;
-    > *:not(#task) {
-      visibility: hidden;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid gray;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    #task,
+    #title {
+      height: 30px;
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+    }
+    #task::placeholder {
+      transform: translateY(4px);
+      font-weight: bold;
+      font-size: 12px;
     }
     #title,
-    #task {
+    #title::placeholder {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .options {
       width: 100%;
+      display: flex;
+      justify-content: space-around;
+      gap: 12px;
     }
-    #checkbox.active,
-    #title.active,
-    #color.active {
-      visibility: visible;
+    > *:not(#task) {
+      display: none;
     }
+    > *.active:not(#task) {
+      display: flex;
+    }
+  }
+  .todo-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
   }
 }

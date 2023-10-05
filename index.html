@@ -3,30 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");
+    </style>
     <link rel="stylesheet" href="./style.css" />
     <script src="main.js" defer></script>
     <title>Todo</title>
   </head>
   <body>
     <header>
-      <button>Toggle sidebar</button>
-      <h1>Todo</h1>
+      <div id="button-toggle-nav">
+        <ion-icon name="menu" size="large"></ion-icon>
+      </div>
+      <h1 class="project-name">Todo</h1>
     </header>
 
     <main>
-      <nav>
-        <button>Tasks</button>
-        <button>Reminders</button>
+      <nav class="nav">
+        <button class="button-project-default" id="button-project-tasks">
+          <ion-icon name="create" size="large"></ion-icon>
+          <span>Tasks</span>
+        </button>
+        <button class="button-project-default" id="button-project-reminders">
+          <ion-icon name="notifications" size="large"></ion-icon>
+          <span>Reminders</span>
+        </button>
+        <div class="user-projects-list">
+          <span>PROJECTS</span>
+        </div>
+        <div class="add-project-popup">
+          <label for="popup-input"> NEW PROJECT </label>
+          <input id="popup-input" type="text" placeholder="Label..." />
+          <div>
+            <button id="popup-add">Add</button>
+            <button id="popup-cancel">Cancel</button>
+          </div>
+        </div>
+        <button class="button-project-new">
+          <ion-icon name="add-circle" size="large"></ion-icon>
+          <span>New Project</span>
+        </button>
       </nav>
+
       <section class="todo">
         <div class="todo-add">
           <input type="text" id="title" placeholder="Title" />
-          <input type="text" id="task" placeholder="Add task..." />
-          <button id="checkbox">Add Checkbox</button>
-          <input type="color" id="color" />
+          <textarea id="task" placeholder="Take a note..."></textarea>
+          <div class="options">
+            <button id="checkbox">
+              <ion-icon name="checkbox-outline"></ion-icon>
+            </button>
+            <input type="color" id="color" />
+            <input type="date" id="date" />
+            <button id="close">Close</button>
+          </div>
         </div>
-        <div class="todo-list"></div>
+        <div class="project-content"></div>
       </section>
     </main>
+
+    <!-- icon api -->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
   </body>
 </html>
