@@ -4,6 +4,9 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family: "IBM Plex Sans", sans-serif;
   --mono-font: "IBM Plex Mono", monospace;
+  --nav-hover-color: rgba(71, 65, 109, 0.171);
+  --nav-focus-color: rgba(74, 66, 126, 0.404);
+  --add-hover-color: rgba(0, 0, 0, 0.192);
 }
 
 /* DEFAULTS */
@@ -19,16 +22,15 @@ html {
 }
 body {
   height: 100vh;
+  font-size: clamp(14px, 1vw, 20px);
 }
 p {
   margin: 0;
-  font-size: clamp(0.8rem, 0.8vw, 1.5rem);
-  width: clamp(45ch, 50%, 75ch);
+  font-size: 1em;
 }
 h1 {
   margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  width: clamp(20ch, 50%, 40ch);
+  font-size: 1.6em;
 }
 header {
   display: flex;
@@ -56,14 +58,23 @@ label {
 /* LAYOUT */
 header {
   border-bottom: 1px solid gray;
+  user-select: none;
   #button-toggle-nav {
     display: flex;
+  }
+  #button-toggle-nav:hover {
+    cursor: pointer;
   }
 }
 
 nav {
   display: flex;
   background: white;
+  padding-top: 12px;
+  > *,
+  .user-projects-list > * {
+    border-radius: 0px 12px 12px 0px;
+  }
   .button-project-default,
   .button-project-new,
   .button-project,
@@ -74,21 +85,19 @@ nav {
     background: none;
     height: 48px;
     width: 100%;
-
     gap: 22px;
     > span,
     .left-panel > span {
       font-weight: bold;
-      font-size: 16px;
+      font-size: 1.3em;
     }
     > span,
     .left-panel > span,
-    .right-panel > span {
+    .right-panel {
       display: none;
     }
     > span.active,
-    .left-panel > span.active,
-    .right-panel > span.active {
+    .left-panel > span.active {
       display: flex;
     }
   }
@@ -100,7 +109,16 @@ nav {
   .button-project-default:hover,
   .button-project-new:hover,
   .button-project:hover {
-    background-color: rgba(0, 0, 0, 0.068);
+    background-color: var(--nav-hover-color);
+    cursor: pointer;
+    .right-panel.active {
+      display: flex;
+    }
+  }
+  .button-project-default.active,
+  .button-project-new.active,
+  .button-project.active {
+    background-color: var(--nav-focus-color);
   }
   .add-project-popup {
     display: none;
@@ -126,7 +144,7 @@ nav {
         border: none;
         background: none;
         font-weight: bold;
-        font-size: 16px;
+        font-size: 1.3em;
         padding: 12px 24px;
       }
     }
@@ -153,6 +171,20 @@ nav {
       justify-content: space-between;
     }
   }
+  .delete {
+    display: flex;
+    align-items: center;
+    width: 24px;
+    aspect-ratio: 1;
+    > ion-icon {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+nav.active {
+  min-width: 300px;
+  max-width: 300px;
 }
 
 .todo {
@@ -161,13 +193,14 @@ nav {
   flex-direction: column;
   align-items: center;
   padding: 22px;
+  gap: 22px;
   .todo-add {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 8px;
     width: 70%;
-    padding: 12px;
+    padding: 4px 12px;
     border-radius: 8px;
     border: 1px solid gray;
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
@@ -180,7 +213,7 @@ nav {
       resize: none;
     }
     #task::placeholder {
-      transform: translateY(4px);
+      transform: translateY(5px);
       font-weight: bold;
       font-size: 12px;
     }
@@ -189,22 +222,84 @@ nav {
       font-weight: bold;
       font-size: 16px;
     }
-    .options {
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      gap: 12px;
-    }
     > *:not(#task) {
       display: none;
     }
     > *.active:not(#task) {
       display: flex;
     }
+    .options {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    #close {
+      width: 100px;
+      padding: 8px 0px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      background: none;
+    }
+    #close:hover {
+      background: var(--add-hover-color);
+    }
+    #checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      background: none;
+      opacity: 0.7;
+      aspect-ratio: 1;
+      > ion-icon {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    #checkbox:hover {
+      background: var(--add-hover-color);
+    }
+    #color {
+      width: 24px;
+      height: 24px;
+    }
+    #date {
+      width: 45%;
+    }
   }
   .todo-list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     width: 100%;
+    gap: 22px;
+    .task {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      word-break: break-all;
+      padding: 12px;
+      gap: 12px;
+      border-radius: 8px;
+      border: 1px solid gray;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+      .deadline {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 4px 8px 4px 4px;
+        gap: 8px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.123);
+      }
+      .deadline.none {
+        display: none;
+      }
+    }
   }
 }

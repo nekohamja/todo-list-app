@@ -24,23 +24,31 @@ export default class UI {
     // Storage.getTodoList()
     //   .getProject(projectName)
     //   .getTasks()
-    //   .forEach((task) => UI.createTask(task.name, task.dueDate));
+    //   .forEach((task) =>
+    //     UI.createTask(task.title, task.desc, task.dueDate, task.color)
+    //   );
 
     if (projectName !== "Reminders") {
       UI.initAddTaskButtons();
     }
   }
   static loadProjectContent(projectName) {
-    const projectContent = document.querySelector(".project-content");
+    const addTaskPanel = document.querySelector(".todo-add");
     const projectTitle = document.querySelector(".project-name");
     projectTitle.textContent = projectName;
-    projectContent.innerHTML = `<div class="todo-list">
-    
+    addTaskPanel.innerHTML = `
+    <input type="text" id="title" placeholder="Title" />      
+    <textarea id="task" placeholder="Take a note..."></textarea>
+    <div class="options">
+      <button id="checkbox" title="Add Checklist"><ion-icon name="checkbox-outline"></ion-icon></button>
+      <input type="color" id="color" title="Color" value="#FFFFFF"/>
+      <input type="date" id="date" title="Add Reminder"/>
+      <button id="close">Close</button>
     </div>`;
     UI.loadTasks(projectName);
   }
 
-  // CREATE CONTENT
+  // CREATE/CLEAR CONTENT
   static createProject(name) {
     const userProjects = document.querySelector(".user-projects-list");
     userProjects.innerHTML += ` 
@@ -49,21 +57,51 @@ export default class UI {
         <ion-icon name="folder" size="large"></ion-icon>
         <span class="active">${name}</span>
       </div>
-      <div class="right-panel"><span class="delete active">delete</span></div>
+      <div class="right-panel active">
+        <span class="delete">
+          <ion-icon name="close"></ion-icon>
+        </span>
+      </div>
     </button>`;
     UI.initProjectButtons();
   }
-
-  // continue here!!
-  static createTask(title, task, dueDate) {
+  static createTask(title, desc, dueDate, color) {
     const tasksList = document.querySelector(".todo-list");
+    const visibility = dueDate === "" ? "none" : "";
     tasksList.innerHTML += ` 
-      <div>
+      <div class="task" style="background: ${color} ">
         <p><b>${title}</b></p>
-        <p>${task}</p>
-        <p>${dueDate}</p>
+        <p>${desc}</p>
+        <div class="deadline ${visibility}">
+          <ion-icon name="time-outline"></ion-icon>
+          <p>${dueDate}</p>
+        </div>
       </div>
     `;
+  }
+
+  // CONTINUE HERE!!
+  // fix clearprojects()
+  static clear() {
+    UI.clearProjectPreview();
+    UI.clearProjects();
+    UI.clearTasks();
+  }
+  static clearProjectPreview() {
+    console.log("clear project preview...");
+    const projectPreview = document.querySelector(".todo");
+    projectPreview.textContent = "";
+  }
+
+  static clearProjects() {
+    console.log("clearing project...");
+    const projectsList = document.querySelector("user-projects-list");
+    projectsList.textContent = "";
+  }
+  static clearTasks() {
+    console.log("clear tasks...");
+    const tasksList = document.querySelector("todo-list");
+    tasksList.textContent = "";
   }
 
   // ADD PROJECT EVENT LISTENER
@@ -104,11 +142,11 @@ export default class UI {
       return;
     }
 
-    if (Storage.getTodoList().contains(projectName)) {
-      inputPopup.value = "";
-      alert("Project name already exists.");
-      return;
-    }
+    // if (Storage.getTodoList().contains(projectName)) {
+    //   inputPopup.value = "";
+    //   alert("Project name already exists.");
+    //   return;
+    // }
 
     // Storage.addProject(new Project(projectName));
     UI.createProject(projectName);
@@ -124,7 +162,6 @@ export default class UI {
     const remindersButton = document.querySelector("#button-project-reminders");
     const openNavButton = document.querySelector("#button-toggle-nav");
     const projectButtons = document.querySelectorAll("[data-project-button]");
-
     tasksButton.addEventListener("click", UI.openTasks);
     remindersButton.addEventListener("click", UI.openReminders);
     openNavButton.addEventListener("click", UI.toggleNav);
@@ -140,12 +177,13 @@ export default class UI {
   }
   static handleProjectButton(e) {
     const projectName = this.children[0].children[1].textContent;
+    // "md" is from ion icon's class
+    if (e.target.classList.contains("md")) {
+      console.log("attempt to delete project");
 
-    if (e.target.classList.contains("delete")) {
       UI.deleteProject(projectName, this);
       return;
     }
-
     UI.openProject(projectName, this);
   }
   static openProject(projectName, projectButton) {
@@ -160,22 +198,24 @@ export default class UI {
     UI.loadProjectContent(projectName);
   }
   static deleteProject(projectName, button) {
-    // if (button.classList.contains('active')) UI.clearProjectPreview()
-    Storage.deleteProject(projectName);
-    // UI.clearProjects();
+    if (button.classList.contains("active")) UI.clearProjectPreview();
+    // Storage.deleteProject(projectName);
+    UI.clearProjects();
     UI.loadProjects();
   }
   static toggleNav() {
+    const nav = document.querySelector(".nav");
     const defaultProjectText = document.querySelectorAll(".nav>button>span");
     const userProjectText = document.querySelectorAll(".left-panel>span");
     const userProjectList = document.querySelector(".user-projects-list>span");
-    const deleteButton = document.querySelectorAll(".right-panel>span");
+    const deleteButton = document.querySelectorAll(".right-panel");
     const addProjectPopup = document.querySelector(".add-project-popup");
 
     // UI.closeAllPopups()
     defaultProjectText.forEach((text) => text.classList.toggle("active"));
     userProjectText.forEach((text) => text.classList.toggle("active"));
     userProjectList.classList.toggle("active");
+    nav.classList.toggle("active");
     deleteButton.forEach((text) => text.classList.toggle("active"));
     if (addProjectPopup.classList.contains("active")) UI.closeAddProjectPopup();
   }
@@ -220,8 +260,12 @@ export default class UI {
     const projectName = document.querySelector(".project-name").textContent;
     const addTaskTitle = document.querySelector("#title");
     const addTaskInput = document.querySelector("#task");
-    const taskName = addTaskInput.value;
+    const addTaskColor = document.querySelector("#color");
+    const addTaskDate = document.querySelector("#date");
     const taskTitle = addTaskTitle.value;
+    const taskName = addTaskInput.value;
+    const taskColor = addTaskColor.value;
+    const taskDate = addTaskDate.value;
 
     if (taskName === "") {
       alert("Task name can't be empty.");
@@ -234,9 +278,12 @@ export default class UI {
     //   return;
     // }
 
-    // Storage.addTask(projectName, new Task(taskName))
-    UI.createTask(taskTitle, taskName, "No date");
+    // Storage.addTask(projectName, new Task(taskName));
+    UI.createTask(taskTitle, taskName, taskDate, taskColor);
     addTaskInput.value = "";
+    addTaskTitle.value = "";
+    addTaskDate.value = "";
+    addTaskColor.value = "#FFFFFF";
     UI.closeAddTaskPopup();
   }
   static handleAddTaskPopupInput(e) {
