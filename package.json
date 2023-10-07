@@ -4,9 +4,12 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "git": "git subtree push --prefix dist origin gh-pages",
     "watch": "webpack --watch",
     "build": "webpack"
   },
+  "author": "nekohamja",
+  "license": "ISC",
   "devDependencies": {
     "webpack-cli": "^5.1.4"
   },
