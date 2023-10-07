@@ -81,7 +81,7 @@ export default class UI {
   }
 
   // CONTINUE HERE!!
-  // fix clearprojects()
+  // clear methods remove everything
   static clear() {
     UI.clearProjectPreview();
     UI.clearProjects();
@@ -90,18 +90,17 @@ export default class UI {
   static clearProjectPreview() {
     console.log("clear project preview...");
     const projectPreview = document.querySelector(".todo");
-    projectPreview.textContent = "";
+    projectPreview.innerHTML = "";
   }
 
   static clearProjects() {
-    console.log("clearing project...");
-    const projectsList = document.querySelector("user-projects-list");
-    projectsList.textContent = "";
+    const projectsList = document.querySelector(".user-projects-list");
+    projectsList.innerHTML = "";
   }
   static clearTasks() {
     console.log("clear tasks...");
-    const tasksList = document.querySelector("todo-list");
-    tasksList.textContent = "";
+    const tasksList = document.querySelector(".todo-list");
+    tasksList.innerHTML = "";
   }
 
   // ADD PROJECT EVENT LISTENER
@@ -179,8 +178,6 @@ export default class UI {
     const projectName = this.children[0].children[1].textContent;
     // "md" is from ion icon's class
     if (e.target.classList.contains("md")) {
-      console.log("attempt to delete project");
-
       UI.deleteProject(projectName, this);
       return;
     }
@@ -207,7 +204,7 @@ export default class UI {
     const nav = document.querySelector(".nav");
     const defaultProjectText = document.querySelectorAll(".nav>button>span");
     const userProjectText = document.querySelectorAll(".left-panel>span");
-    const userProjectList = document.querySelector(".user-projects-list>span");
+    const userProjectList = document.querySelector(".nav>span");
     const deleteButton = document.querySelectorAll(".right-panel");
     const addProjectPopup = document.querySelector(".add-project-popup");
 

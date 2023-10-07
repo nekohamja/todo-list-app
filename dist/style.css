@@ -75,6 +75,16 @@ nav {
   .user-projects-list > * {
     border-radius: 0px 12px 12px 0px;
   }
+  > span {
+    display: none;
+    font-family: var(--mono-font);
+    font-size: 10px;
+    padding: 12px 24px;
+    letter-spacing: 4px;
+  }
+  > span.active {
+    display: flex;
+  }
   .button-project-default,
   .button-project-new,
   .button-project,
@@ -156,16 +166,6 @@ nav {
     display: flex;
     flex-direction: column;
     width: 100%;
-    > span {
-      display: none;
-      font-family: var(--mono-font);
-      font-size: 10px;
-      padding: 12px 24px;
-      letter-spacing: 4px;
-    }
-    > span.active {
-      display: flex;
-    }
     .button-project {
       display: flex;
       justify-content: space-between;
