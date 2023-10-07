@@ -3,6 +3,7 @@ import Storage from "./Storage";
 import Project from "./Projects";
 import Task from "./Task";
 
+// localStorage.clear();
 export default class UI {
   // LOAD CONTENT
   static loadHomepage() {
@@ -21,86 +22,99 @@ export default class UI {
     UI.initAddProjectButtons();
   }
   static loadTasks(projectName) {
-    // Storage.getTodoList()
-    //   .getProject(projectName)
-    //   .getTasks()
-    //   .forEach((task) =>
-    //     UI.createTask(task.title, task.desc, task.dueDate, task.color)
-    //   );
+    Storage.getTodoList()
+      .getProject(projectName)
+      .getTasks()
+      .forEach((task) =>
+        UI.createTask(task.title, task.name, task.dueDate, task.color)
+      );
 
     if (projectName !== "Reminders") {
       UI.initAddTaskButtons();
     }
   }
   static loadProjectContent(projectName) {
+    UI.clearTasks();
     const addTaskPanel = document.querySelector(".todo-add");
     const projectTitle = document.querySelector(".project-name");
     projectTitle.textContent = projectName;
-    addTaskPanel.innerHTML = `
-    <input type="text" id="title" placeholder="Title" />      
-    <textarea id="task" placeholder="Take a note..."></textarea>
-    <div class="options">
-      <button id="checkbox" title="Add Checklist"><ion-icon name="checkbox-outline"></ion-icon></button>
-      <input type="color" id="color" title="Color" value="#FFFFFF"/>
-      <input type="date" id="date" title="Add Reminder"/>
-      <button id="close">Close</button>
-    </div>`;
+    if (projectName !== "Reminders") {
+      addTaskPanel.style.display = "flex";
+      addTaskPanel.innerHTML = `
+      <input type="text" id="title" placeholder="Title" />      
+      <textarea id="task" placeholder="Take a note..."></textarea>
+      <div class="options">
+        <button id="checkbox" title="Add Checklist"><ion-icon name="checkbox-outline"></ion-icon></button>
+        <input type="color" id="color" title="Color" value="#FFFFFF"/>
+        <input type="date" id="date" title="Add Reminder"/>
+        <button id="close">Close</button>
+      </div>`;
+    } else addTaskPanel.style.display = "none";
     UI.loadTasks(projectName);
   }
 
   // CREATE/CLEAR CONTENT
   static createProject(name) {
     const userProjects = document.querySelector(".user-projects-list");
+    const nav = document.querySelector(".nav");
+    const activeToggle = nav.classList.contains("active") ? "active" : "";
+
     userProjects.innerHTML += ` 
     <button class="button-project" data-project-button>
       <div class="left-panel">
         <ion-icon name="folder" size="large"></ion-icon>
-        <span class="active">${name}</span>
+        <span class="${activeToggle}">${name}</span>
       </div>
-      <div class="right-panel active">
+      <div class="right-panel ${activeToggle}">
         <span class="delete">
-          <ion-icon name="close"></ion-icon>
+          <ion-icon name="close" class="delete"></ion-icon>
         </span>
       </div>
     </button>`;
     UI.initProjectButtons();
   }
   static createTask(title, desc, dueDate, color) {
-    const tasksList = document.querySelector(".todo-list");
-    const visibility = dueDate === "" ? "none" : "";
+    const tasksList = document.querySelector(".pending-tasks");
+    const hasTitle = title === "" ? "none" : "";
+    const hasDueDate = dueDate === "" ? "none" : "";
     tasksList.innerHTML += ` 
-      <div class="task" style="background: ${color} ">
-        <p><b>${title}</b></p>
+      <div class="task" style="background: ${color}" data-task-button>
+        <p class="task-title ${hasTitle}"><b>${title}</b></p>
         <p>${desc}</p>
-        <div class="deadline ${visibility}">
+        <div class="deadline ${hasDueDate}">
           <ion-icon name="time-outline"></ion-icon>
           <p>${dueDate}</p>
         </div>
+        <div class="actions">
+          <ion-icon name="trash-bin" class="trash" title="Delete task"></ion-icon>
+          <ion-icon name="checkmark-circle" class="complete" title="Mark as complete"></ion-icon>
+        </div>
       </div>
     `;
+    UI.initTaskButtons();
   }
-
-  // CONTINUE HERE!!
-  // clear methods remove everything
-  static clear() {
-    UI.clearProjectPreview();
-    UI.clearProjects();
-    UI.clearTasks();
+  static createCompletedTask(title, desc) {
+    const tasksList = document.querySelector(".completed-tasks");
+    tasksList.innerHTML += ` 
+      <div class="task completed" data-task-button>
+        <p><b>${title}</b></p>
+        <p>${desc}</p>
+        <div class="actions">
+          <ion-icon name="trash-bin" class="trash"></ion-icon>
+        </div>
+      </div>
+    `;
+    UI.initTaskButtons();
   }
-  static clearProjectPreview() {
-    console.log("clear project preview...");
-    const projectPreview = document.querySelector(".todo");
-    projectPreview.innerHTML = "";
-  }
-
   static clearProjects() {
     const projectsList = document.querySelector(".user-projects-list");
     projectsList.innerHTML = "";
   }
   static clearTasks() {
-    console.log("clear tasks...");
-    const tasksList = document.querySelector(".todo-list");
-    tasksList.innerHTML = "";
+    const pendingTasks = document.querySelector(".pending-tasks");
+    pendingTasks.innerHTML = "";
+    const completedTasks = document.querySelector(".completed-tasks");
+    completedTasks.innerHTML = "";
   }
 
   // ADD PROJECT EVENT LISTENER
@@ -141,13 +155,13 @@ export default class UI {
       return;
     }
 
-    // if (Storage.getTodoList().contains(projectName)) {
-    //   inputPopup.value = "";
-    //   alert("Project name already exists.");
-    //   return;
-    // }
+    if (Storage.getTodoList().contains(projectName)) {
+      inputPopup.value = "";
+      alert("Project name already exists.");
+      return;
+    }
 
-    // Storage.addProject(new Project(projectName));
+    Storage.addProject(new Project(projectName));
     UI.createProject(projectName);
     UI.closeAddProjectPopup();
   }
@@ -176,8 +190,7 @@ export default class UI {
   }
   static handleProjectButton(e) {
     const projectName = this.children[0].children[1].textContent;
-    // "md" is from ion icon's class
-    if (e.target.classList.contains("md")) {
+    if (e.target.classList.contains("delete")) {
       UI.deleteProject(projectName, this);
       return;
     }
@@ -194,11 +207,10 @@ export default class UI {
     UI.closeAddProjectPopup();
     UI.loadProjectContent(projectName);
   }
-  static deleteProject(projectName, button) {
-    if (button.classList.contains("active")) UI.clearProjectPreview();
-    // Storage.deleteProject(projectName);
+  static deleteProject(projectName) {
+    Storage.deleteProject(projectName);
     UI.clearProjects();
-    UI.loadProjects();
+    UI.loadHomepage();
   }
   static toggleNav() {
     const nav = document.querySelector(".nav");
@@ -269,13 +281,24 @@ export default class UI {
       return;
     }
 
-    // if (Storage.getTodoList().getProject(projectName).contains(taskName)) {
-    //   alert("Task name already exists.");
-    //   addTaskInput.value = "";
-    //   return;
-    // }
+    if (Storage.getTodoList().getProject(projectName).contains(taskName)) {
+      alert("Task name already exists.");
+      addTaskTitle.value = "";
+      addTaskInput.value = "";
+      return;
+    }
 
-    // Storage.addTask(projectName, new Task(taskName));
+    if (Storage.getTodoList().getProject(projectName).contains(taskTitle)) {
+      alert("Task title already exists.");
+      addTaskTitle.value = "";
+      addTaskInput.value = "";
+      return;
+    }
+
+    Storage.addTask(
+      projectName,
+      new Task(taskTitle, taskName, taskDate, taskColor)
+    );
     UI.createTask(taskTitle, taskName, taskDate, taskColor);
     addTaskInput.value = "";
     addTaskTitle.value = "";
@@ -294,5 +317,55 @@ export default class UI {
       addTaskInput.blur();
       UI.closeAddTaskPopup();
     }
+  }
+
+  //continue here!!
+  // add rename/re adjust date/ rechange color on a task
+  // add class for completed tasks
+  // date format for tasks
+  // prevent picking past dates
+  // add all tasks with dates in reminders
+
+  // TASK EVENT LISTENER
+  static initTaskButtons() {
+    const taskButtons = document.querySelectorAll("[data-task-button]");
+    // const taskNameInputs = document.querySelectorAll('[data-input-task-name]')
+    // const dueDateInputs = document.querySelectorAll('[data-input-due-date]')
+    taskButtons.forEach((taskButton) =>
+      taskButton.addEventListener("click", UI.handleTaskButton)
+    );
+  }
+  static handleTaskButton(e) {
+    if (e.target.classList.contains("complete")) {
+      UI.setTaskCompleted(this);
+      return;
+    }
+    if (e.target.classList.contains("trash")) {
+      UI.deleteTask(this);
+      return;
+    }
+    // if (e.target.classList.contains('task-content')) {
+    //   UI.openRenameInput(this)
+    //   return
+    // }
+    // if (e.target.classList.contains('due-date')) {
+    //   UI.openSetDateInput(this)
+    // }
+  }
+  static setTaskCompleted(taskButton) {
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskTitle = taskButton.children[0].textContent;
+    const taskDescription = taskButton.children[1].textContent;
+    Storage.deleteTask(projectName, taskDescription);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
+    UI.createCompletedTask(taskTitle, taskDescription);
+  }
+  static deleteTask(taskButton) {
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskDescription = taskButton.children[1].textContent;
+    Storage.deleteTask(projectName, taskDescription);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
   }
 }

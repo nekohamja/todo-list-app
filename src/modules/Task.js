@@ -1,15 +1,23 @@
 // handles task creation
 
 export default class Task {
-  constructor(name, dueDate = "no date") {
+  constructor(title, name, dueDate, color) {
+    this.title = title;
     this.name = name;
     this.dueDate = dueDate;
+    this.color = color;
+  }
+
+  setTitle(title) {
+    this.title = title;
+  }
+  getTitle() {
+    return this.title;
   }
 
   setName(name) {
     this.name = name;
   }
-
   getName() {
     return this.name;
   }
@@ -17,9 +25,15 @@ export default class Task {
   setDate(dueDate) {
     this.dueDate = dueDate;
   }
-
   getDate() {
     return this.dueDate;
+  }
+
+  setColor(color) {
+    this.color = color;
+  }
+  getColor() {
+    return this.color;
   }
 
   getDateFormatted() {
