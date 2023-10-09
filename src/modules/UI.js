@@ -10,6 +10,7 @@ export default class UI {
     UI.loadProjects();
     UI.initProjectButtons();
     UI.openProject("Tasks", document.querySelector("#button-project-tasks"));
+    document.addEventListener("keydown", UI.handleKeyboardInput);
   }
   static loadProjects() {
     Storage.getTodoList()
@@ -79,8 +80,10 @@ export default class UI {
     const hasDueDate = dueDate === "" ? "none" : "";
     tasksList.innerHTML += ` 
       <div class="task" style="background: ${color}" data-task-button>
-        <p class="task-title ${hasTitle}"><b>${title}</b></p>
-        <p>${desc}</p>
+        <p class="task-title ${hasTitle}">${title}</p>
+        <input type="text" id="task-title" data-input-task-title>
+        <p class="task-desc">${desc}</p>
+        <input type="text" id="task-desc" data-input-task-desc>
         <div class="deadline ${hasDueDate}">
           <ion-icon name="time-outline"></ion-icon>
           <p>${dueDate}</p>
@@ -115,6 +118,21 @@ export default class UI {
     pendingTasks.innerHTML = "";
     const completedTasks = document.querySelector(".completed-tasks");
     completedTasks.innerHTML = "";
+  }
+  static closeAllPopups() {
+    UI.closeAddProjectPopup();
+    UI.closeAllInputs();
+  }
+  static closeAllInputs() {
+    const taskButtons = document.querySelectorAll("[data-task-button]");
+    taskButtons.forEach((button) => {
+      UI.closeRenameInput(button, "desc");
+      UI.closeRenameInput(button, "title");
+      // UI.closeSetDateInput(button)
+    });
+  }
+  static handleKeyboardInput(e) {
+    if (e.key === "Escape") UI.closeAllPopups();
   }
 
   // ADD PROJECT EVENT LISTENER
@@ -320,7 +338,7 @@ export default class UI {
   }
 
   //continue here!!
-  // add rename/re adjust date/ rechange color on a task
+  // re adjust date/ rechange color on a task
   // add class for completed tasks
   // date format for tasks
   // prevent picking past dates
@@ -329,33 +347,49 @@ export default class UI {
   // TASK EVENT LISTENER
   static initTaskButtons() {
     const taskButtons = document.querySelectorAll("[data-task-button]");
-    // const taskNameInputs = document.querySelectorAll('[data-input-task-name]')
+    const taskDescInputs = document.querySelectorAll("[data-input-task-desc]");
+    const taskTitleInputs = document.querySelectorAll(
+      "[data-input-task-title]"
+    );
     // const dueDateInputs = document.querySelectorAll('[data-input-due-date]')
     taskButtons.forEach((taskButton) =>
       taskButton.addEventListener("click", UI.handleTaskButton)
     );
+    taskDescInputs.forEach((taskDescInput) =>
+      taskDescInput.addEventListener("keypress", UI.renameTaskDescription)
+    );
+    taskTitleInputs.forEach((taskTitleInput) =>
+      taskTitleInput.addEventListener("keypress", UI.renameTaskTitle)
+    );
   }
   static handleTaskButton(e) {
     if (e.target.classList.contains("complete")) {
+      console.log("complete");
       UI.setTaskCompleted(this);
       return;
     }
     if (e.target.classList.contains("trash")) {
+      console.log("trash");
       UI.deleteTask(this);
       return;
     }
-    // if (e.target.classList.contains('task-content')) {
-    //   UI.openRenameInput(this)
-    //   return
-    // }
-    // if (e.target.classList.contains('due-date')) {
+    if (e.target.classList.contains("task-desc")) {
+      UI.openRenameInput(this, "desc");
+      return;
+    }
+    if (e.target.classList.contains("task-title")) {
+      console.log("title");
+      UI.openRenameInput(this, "title");
+      return;
+    }
+    // if (e.target.classList.contains('deadline')) {
     //   UI.openSetDateInput(this)
     // }
   }
   static setTaskCompleted(taskButton) {
     const projectName = document.querySelector(".project-name").textContent;
     const taskTitle = taskButton.children[0].textContent;
-    const taskDescription = taskButton.children[1].textContent;
+    const taskDescription = taskButton.children[2].textContent;
     Storage.deleteTask(projectName, taskDescription);
     UI.clearTasks();
     UI.loadTasks(projectName);
@@ -363,9 +397,58 @@ export default class UI {
   }
   static deleteTask(taskButton) {
     const projectName = document.querySelector(".project-name").textContent;
-    const taskDescription = taskButton.children[1].textContent;
+    const taskDescription = taskButton.children[2].textContent;
     Storage.deleteTask(projectName, taskDescription);
     UI.clearTasks();
     UI.loadTasks(projectName);
+  }
+  static openRenameInput(taskButton, type) {
+    const taskSelected =
+      type === "desc" ? taskButton.children[2] : taskButton.children[0];
+    const taskInput =
+      type === "desc" ? taskButton.children[3] : taskButton.children[1];
+    let taskDesc = taskSelected.textContent;
+    UI.closeAllPopups();
+    taskSelected.classList.add("active");
+    taskInput.classList.add("active");
+    taskInput.value = taskDesc;
+    taskInput.focus();
+  }
+  static closeRenameInput(taskButton, type) {
+    const taskSelected =
+      type === "desc" ? taskButton.children[2] : taskButton.children[0];
+    const taskInput =
+      type === "desc" ? taskButton.children[3] : taskButton.children[1];
+    taskSelected.classList.remove("active");
+    taskInput.classList.remove("active");
+    taskInput.value = "";
+  }
+  static renameTaskDescription(e) {
+    if (e.key !== "Enter") return;
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskDesc = this.previousElementSibling.textContent;
+    const newTaskDesc = this.value;
+    if (newTaskDesc === "") {
+      alert("Field cannot be blank.");
+      return;
+    }
+    Storage.renameTask(projectName, taskDesc, newTaskDesc);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
+    UI.closeRenameInput(this.parentNode);
+  }
+  static renameTaskTitle(e) {
+    if (e.key !== "Enter") return;
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskDesc = this.nextElementSibling.textContent;
+    const newTaskDesc = this.value;
+    if (newTaskDesc === "") {
+      alert("Field cannot be blank.");
+      return;
+    }
+    Storage.renameTaskTitle(projectName, taskDesc, newTaskDesc);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
+    UI.closeRenameInput(this.parentNode);
   }
 }
