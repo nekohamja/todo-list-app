@@ -312,8 +312,29 @@ nav.active {
         border: 1px solid gray;
         box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
         transition: all 0.25s ease;
+        .task-title {
+          font-weight: bold;
+        }
         .task-title.none {
           display: none;
+        }
+        #task-desc,
+        #task-title {
+          width: 100%;
+        }
+        .task-desc:hover,
+        .task-title:hover {
+          cursor: pointer;
+        }
+        .task-desc.active,
+        #task-desc,
+        .task-title.active,
+        #task-title {
+          display: none;
+        }
+        #task-desc.active,
+        #task-title.active {
+          display: flex;
         }
         .deadline {
           display: flex;
