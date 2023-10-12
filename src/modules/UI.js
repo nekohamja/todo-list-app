@@ -1,4 +1,4 @@
-import { add, format } from "date-fns";
+import { add, format, isBefore, parseISO } from "date-fns";
 import Storage from "./Storage";
 import Project from "./Projects";
 import Task from "./Task";
@@ -45,7 +45,6 @@ export default class UI {
       <input type="text" id="title" placeholder="Title" />      
       <textarea id="task" placeholder="Take a note..."></textarea>
       <div class="options">
-        <button id="checkbox" title="Add Checklist"><ion-icon name="checkbox-outline"></ion-icon></button>
         <input type="color" id="color" title="Color" value="#FFFFFF"/>
         <input type="date" id="date" title="Add Reminder"/>
         <button id="close">Close</button>
@@ -81,16 +80,19 @@ export default class UI {
     tasksList.innerHTML += ` 
       <div class="task" style="background: ${color}" data-task-button>
         <p class="task-title ${hasTitle}">${title}</p>
-        <input type="text" id="task-title" data-input-task-title>
+        <input type="text" id="task-title" data-input-task-title/>
         <p class="task-desc">${desc}</p>
-        <input type="text" id="task-desc" data-input-task-desc>
+        <input type="text" id="task-desc" data-input-task-desc/>
         <div class="deadline ${hasDueDate}">
           <ion-icon name="time-outline"></ion-icon>
-          <p>${dueDate}</p>
+          <p class = "task-date">${dueDate}</p>
+          <input type="date" id="task-date" data-input-due-date/>
         </div>
         <div class="actions">
           <ion-icon name="trash-bin" class="trash" title="Delete task"></ion-icon>
           <ion-icon name="checkmark-circle" class="complete" title="Mark as complete"></ion-icon>
+          <ion-icon name="color-palette" class="change-color" title="Change color"></ion-icon>
+          <input type="color" id="change-color" value="${color}" data-input-color/>
         </div>
       </div>
     `;
@@ -128,7 +130,8 @@ export default class UI {
     taskButtons.forEach((button) => {
       UI.closeRenameInput(button, "desc");
       UI.closeRenameInput(button, "title");
-      // UI.closeSetDateInput(button)
+      UI.closeSetDateInput(button);
+      UI.closeSetColorInput(button);
     });
   }
   static handleKeyboardInput(e) {
@@ -204,6 +207,7 @@ export default class UI {
     UI.openProject("Tasks", this);
   }
   static openReminders() {
+    Storage.updateReminders();
     UI.openProject("Reminders", this);
   }
   static handleProjectButton(e) {
@@ -292,7 +296,13 @@ export default class UI {
     const taskTitle = addTaskTitle.value;
     const taskName = addTaskInput.value;
     const taskColor = addTaskColor.value;
-    const taskDate = addTaskDate.value;
+    const taskDate = format(new Date(addTaskDate.value), "dd/MM/yyyy");
+
+    if (isBefore(new Date(addTaskDate.value), new Date())) {
+      alert("Date is already in the past.");
+      addTaskDate.value = "";
+      return;
+    }
 
     if (taskName === "") {
       alert("Task name can't be empty.");
@@ -317,6 +327,7 @@ export default class UI {
       projectName,
       new Task(taskTitle, taskName, taskDate, taskColor)
     );
+
     UI.createTask(taskTitle, taskName, taskDate, taskColor);
     addTaskInput.value = "";
     addTaskTitle.value = "";
@@ -338,10 +349,7 @@ export default class UI {
   }
 
   //continue here!!
-  // re adjust date/ rechange color on a task
   // add class for completed tasks
-  // date format for tasks
-  // prevent picking past dates
   // add all tasks with dates in reminders
 
   // TASK EVENT LISTENER
@@ -351,7 +359,8 @@ export default class UI {
     const taskTitleInputs = document.querySelectorAll(
       "[data-input-task-title]"
     );
-    // const dueDateInputs = document.querySelectorAll('[data-input-due-date]')
+    const taskDateInputs = document.querySelectorAll("[data-input-due-date]");
+    const taskColorInputs = document.querySelectorAll("[data-input-color]");
     taskButtons.forEach((taskButton) =>
       taskButton.addEventListener("click", UI.handleTaskButton)
     );
@@ -361,15 +370,19 @@ export default class UI {
     taskTitleInputs.forEach((taskTitleInput) =>
       taskTitleInput.addEventListener("keypress", UI.renameTaskTitle)
     );
+    taskDateInputs.forEach((taskDateInput) =>
+      taskDateInput.addEventListener("change", UI.setTaskDate)
+    );
+    taskColorInputs.forEach((taskColorInput) =>
+      taskColorInput.addEventListener("change", UI.setTaskColor)
+    );
   }
   static handleTaskButton(e) {
     if (e.target.classList.contains("complete")) {
-      console.log("complete");
       UI.setTaskCompleted(this);
       return;
     }
     if (e.target.classList.contains("trash")) {
-      console.log("trash");
       UI.deleteTask(this);
       return;
     }
@@ -378,13 +391,15 @@ export default class UI {
       return;
     }
     if (e.target.classList.contains("task-title")) {
-      console.log("title");
       UI.openRenameInput(this, "title");
       return;
     }
-    // if (e.target.classList.contains('deadline')) {
-    //   UI.openSetDateInput(this)
-    // }
+    if (e.target.classList.contains("task-date")) {
+      UI.openSetDateInput(this);
+    }
+    if (e.target.classList.contains("change-color")) {
+      UI.openSetColorInput(this);
+    }
   }
   static setTaskCompleted(taskButton) {
     const projectName = document.querySelector(".project-name").textContent;
@@ -450,5 +465,53 @@ export default class UI {
     UI.clearTasks();
     UI.loadTasks(projectName);
     UI.closeRenameInput(this.parentNode);
+  }
+  static openSetDateInput(taskButton) {
+    const dueDate = taskButton.children[4].children[1];
+    const dueDateInput = taskButton.children[4].children[2];
+    UI.closeAllPopups();
+    dueDate.classList.add("active");
+    dueDateInput.classList.add("active");
+    dueDateInput.showPicker();
+  }
+  static closeSetDateInput(taskButton) {
+    const dueDate = taskButton.children[4].children[1];
+    const dueDateInput = taskButton.children[4].children[2];
+    dueDate.classList.remove("active");
+    dueDateInput.classList.remove("active");
+  }
+  static setTaskDate() {
+    const taskButton = this.parentNode.parentNode;
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskName = taskButton.children[2].textContent;
+    const newDueDate = format(new Date(this.value), "dd/MM/yyyy");
+    Storage.setTaskDate(projectName, taskName, newDueDate);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
+    UI.closeSetDateInput(taskButton);
+  }
+  static openSetColorInput(taskButton) {
+    const color = taskButton.children[5].children[2];
+    const colorInput = taskButton.children[5].children[3];
+    UI.closeAllPopups();
+    color.classList.add("active");
+    colorInput.classList.add("active");
+    colorInput.showPicker();
+  }
+  static closeSetColorInput(taskButton) {
+    const color = taskButton.children[5].children[2];
+    const colorInput = taskButton.children[5].children[3];
+    color.classList.remove("active");
+    colorInput.classList.remove("active");
+  }
+  static setTaskColor() {
+    const taskButton = this.parentNode.parentNode;
+    const projectName = document.querySelector(".project-name").textContent;
+    const taskName = taskButton.children[2].textContent;
+    const newColor = this.value;
+    Storage.setTaskColor(projectName, taskName, newColor);
+    UI.clearTasks();
+    UI.loadTasks(projectName);
+    UI.closeSetColorInput(taskButton);
   }
 }

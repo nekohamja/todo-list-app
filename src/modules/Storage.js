@@ -68,4 +68,16 @@ export default class Storage {
     todoList.getProject(projectName).getTask(taskName).setDate(newDueDate);
     Storage.saveTodoList(todoList);
   }
+
+  static setTaskColor(projectName, taskName, newColor) {
+    const todoList = Storage.getTodoList();
+    todoList.getProject(projectName).getTask(taskName).setColor(newColor);
+    Storage.saveTodoList(todoList);
+  }
+
+  static updateReminders() {
+    const todoList = Storage.getTodoList();
+    todoList.updateReminders();
+    Storage.saveTodoList(todoList);
+  }
 }
