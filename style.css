@@ -4,9 +4,11 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family: "IBM Plex Sans", sans-serif;
   --mono-font: "IBM Plex Mono", monospace;
-  --nav-hover-color: rgba(71, 65, 109, 0.171);
-  --nav-focus-color: rgba(74, 66, 126, 0.404);
-  --add-hover-color: rgba(0, 0, 0, 0.192);
+  --primary-color: #19191b;
+  --border: 1px solid rgb(173, 173, 173);
+  --nav-hover-color: rgba(25, 29, 34, 0.144);
+  --nav-focus-color: rgba(124, 196, 255, 0.877);
+  --add-hover-color: rgba(0, 0, 0, 0.137);
 }
 
 /* DEFAULTS */
@@ -42,7 +44,7 @@ header {
   display: flex;
   align-items: center;
   padding: 22px;
-  gap: 22px;
+  gap: 42px;
 }
 main {
   display: flex;
@@ -59,17 +61,60 @@ label {
   padding: 12px 0px;
   letter-spacing: 4px;
 }
+ion-icon,
+p,
+h1 {
+  color: var(--primary-color);
+}
+input:not(input[type="color"]) {
+  font-size: 1em;
+  padding: 4px;
+}
+input[type="date"] {
+  background-color: transparent;
+  border: var(--border);
+  mix-blend-mode: multiply;
+  border-radius: 8px;
+}
+input[type="color"] {
+  border-radius: 22px;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 22px;
+  padding: 0px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  border: none;
+  border-radius: 22px;
+  padding: 0;
+}
 
 /* LAYOUT */
 header {
   background: white;
-  border-bottom: 1px solid gray;
+  border-bottom: var(--border);
   user-select: none;
+  gap: 22px;
+
   #button-toggle-nav {
     display: flex;
   }
-  #button-toggle-nav:hover {
+  #button-toggle-nav > ion-icon:hover {
     cursor: pointer;
+  }
+  .github {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 32px;
+    flex: 1;
+    > a > ion-icon {
+      transition: all 0.25s ease;
+    }
+  }
+  .github > a > ion-icon:hover {
+    color: var(--nav-focus-color);
   }
 }
 
@@ -77,6 +122,9 @@ nav {
   display: flex;
   background: white;
   padding-top: 12px;
+  > * ion-icon {
+    transition: all 0.25s ease;
+  }
   > *,
   .user-projects-list > * {
     border-radius: 0px 12px 12px 0px;
@@ -122,6 +170,7 @@ nav {
   .button-project-new,
   .button-project {
     padding: 0px 22px;
+    transition: all 0.25s ease;
   }
   .button-project-default:hover,
   .button-project-new:hover,
@@ -131,10 +180,15 @@ nav {
     .right-panel.active {
       display: flex;
     }
+    > ion-icon,
+    .left-panel > ion-icon {
+      transform: translateY(-2px);
+    }
   }
   .button-project-default.active,
   .button-project-new.active,
   .button-project.active {
+    box-shadow: inset rgba(0, 0, 0, 0.068) 0px 3px 8px;
     background-color: var(--nav-focus-color);
   }
   .add-project-popup {
@@ -213,13 +267,15 @@ nav.active {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-    width: 70%;
+    width: clamp(300px, 70%, 800px);
     padding: 4px 12px;
     border-radius: 8px;
-    border: 1px solid gray;
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    border: var(--border);
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+      rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
     #task,
     #title {
+      padding: 0;
       height: 30px;
       width: 100%;
       border: none;
@@ -315,9 +371,14 @@ nav.active {
         padding: 12px;
         gap: 12px;
         border-radius: 8px;
-        border: 1px solid gray;
-        box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+        border: var(--border);
         transition: all 0.25s ease;
+        > input[type="text"] {
+          background-color: transparent;
+          border: var(--border);
+          mix-blend-mode: multiply;
+          border-radius: 8px;
+        }
         .task-title {
           font-weight: bold;
         }
@@ -388,6 +449,8 @@ nav.active {
       }
       .task:hover {
         transform: translateY(-5px);
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+          rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
         .actions {
           opacity: 1;
         }
