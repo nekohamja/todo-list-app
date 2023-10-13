@@ -40,19 +40,21 @@ export default class TodoList {
     this.projects.splice(this.projects.indexOf(projectToDelete), 1);
   }
 
-  // fix code snippet not working with 'tasks'
-  // add code to ignore undefined/ no date tasks
   updateReminders() {
     this.getProject("Reminders").tasks = [];
     this.projects.forEach((project) => {
-      if (project.getName() === "Tasks") return;
-
       const taskReminders = project.getTaskReminders();
-
       taskReminders.forEach((task) => {
-        const taskName = `${task.getName()} (${project.getName()})`;
+        if (task.getDate() === "") return;
+        const taskTitle = `${task.getTitle()} ( from: ${project.getName()})`;
         this.getProject("Reminders").addTask(
-          new Task(taskName, task.getDate())
+          new Task(
+            taskTitle,
+            task.getName(),
+            task.getDate(),
+            task.color,
+            task.isDone
+          )
         );
       });
     });

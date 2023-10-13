@@ -393,8 +393,15 @@ nav.active {
         }
       }
       .task.completed {
-        opacity: 0.6;
-        text-decoration: line-through;
+        opacity: 0.5;
+        .task-title,
+        .task-desc,
+        .task-date {
+          text-decoration: line-through;
+        }
+        .actions > .complete {
+          display: none;
+        }
       }
     }
   }

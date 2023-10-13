@@ -3,7 +3,6 @@ import Storage from "./Storage";
 import Project from "./Projects";
 import Task from "./Task";
 
-// localStorage.clear();
 export default class UI {
   // LOAD CONTENT
   static loadHomepage() {
@@ -27,7 +26,13 @@ export default class UI {
       .getProject(projectName)
       .getTasks()
       .forEach((task) =>
-        UI.createTask(task.title, task.name, task.dueDate, task.color)
+        UI.createTask(
+          task.title,
+          task.name,
+          task.dueDate,
+          task.color,
+          task.isDone
+        )
       );
 
     if (projectName !== "Reminders") {
@@ -51,6 +56,14 @@ export default class UI {
       </div>`;
     } else addTaskPanel.style.display = "none";
     UI.loadTasks(projectName);
+
+    if (projectName === "Reminders") {
+      const tasks = document.querySelectorAll(".task");
+      tasks.forEach((task) => {
+        task.children[5].style.visibility = "hidden";
+        task.style.pointerEvents = "none";
+      });
+    }
   }
 
   // CREATE/CLEAR CONTENT
@@ -73,12 +86,15 @@ export default class UI {
     </button>`;
     UI.initProjectButtons();
   }
-  static createTask(title, desc, dueDate, color) {
-    const tasksList = document.querySelector(".pending-tasks");
+  static createTask(title, desc, dueDate, color, isDone) {
+    const pendingTaskList = document.querySelector(".pending-tasks");
+    const completedTaskList = document.querySelector(".completed-tasks");
     const hasTitle = title === "" ? "none" : "";
     const hasDueDate = dueDate === "" ? "none" : "";
-    tasksList.innerHTML += ` 
-      <div class="task" style="background: ${color}" data-task-button>
+    const isTaskCompleted = isDone === false ? "pending" : "completed";
+    if (isTaskCompleted === "pending") {
+      pendingTaskList.innerHTML += ` 
+      <div class="task ${isTaskCompleted}" style="background: ${color}" data-task-button>
         <p class="task-title ${hasTitle}">${title}</p>
         <input type="text" id="task-title" data-input-task-title/>
         <p class="task-desc">${desc}</p>
@@ -96,19 +112,27 @@ export default class UI {
         </div>
       </div>
     `;
-    UI.initTaskButtons();
-  }
-  static createCompletedTask(title, desc) {
-    const tasksList = document.querySelector(".completed-tasks");
-    tasksList.innerHTML += ` 
-      <div class="task completed" data-task-button>
-        <p><b>${title}</b></p>
-        <p>${desc}</p>
+    } else {
+      completedTaskList.innerHTML += ` 
+      <div class="task ${isTaskCompleted}" style="background: ${color}" data-task-button>
+        <p class="task-title ${hasTitle}">${title}</p>
+        <input type="text" id="task-title" data-input-task-title/>
+        <p class="task-desc">${desc}</p>
+        <input type="text" id="task-desc" data-input-task-desc/>
+        <div class="deadline ${hasDueDate}">
+          <ion-icon name="time-outline"></ion-icon>
+          <p class = "task-date">${dueDate}</p>
+          <input type="date" id="task-date" data-input-due-date/>
+        </div>
         <div class="actions">
-          <ion-icon name="trash-bin" class="trash"></ion-icon>
+          <ion-icon name="trash-bin" class="trash" title="Delete task"></ion-icon>
+          <ion-icon name="checkmark-circle" class="complete" title="Mark as complete"></ion-icon>
+          <ion-icon name="color-palette" class="change-color" title="Change color"></ion-icon>
+          <input type="color" id="change-color" value="${color}" data-input-color/>
         </div>
       </div>
     `;
+    }
     UI.initTaskButtons();
   }
   static clearProjects() {
@@ -293,6 +317,7 @@ export default class UI {
     const addTaskInput = document.querySelector("#task");
     const addTaskColor = document.querySelector("#color");
     const addTaskDate = document.querySelector("#date");
+    const taskisDone = false;
     const taskTitle = addTaskTitle.value;
     const taskName = addTaskInput.value;
     const taskColor = addTaskColor.value;
@@ -308,32 +333,24 @@ export default class UI {
         return;
       }
     }
-
-    if (taskName === "") {
-      alert("Task name can't be empty.");
-      return;
-    }
-
+    if (taskName === "") return;
     if (Storage.getTodoList().getProject(projectName).contains(taskName)) {
       alert("Task name already exists.");
       addTaskTitle.value = "";
       addTaskInput.value = "";
       return;
     }
-
     if (Storage.getTodoList().getProject(projectName).contains(taskTitle)) {
       alert("Task title already exists.");
       addTaskTitle.value = "";
       addTaskInput.value = "";
       return;
     }
-
     Storage.addTask(
       projectName,
-      new Task(taskTitle, taskName, taskDate, taskColor)
+      new Task(taskTitle, taskName, taskDate, taskColor, taskisDone)
     );
-
-    UI.createTask(taskTitle, taskName, taskDate, taskColor);
+    UI.createTask(taskTitle, taskName, taskDate, taskColor, taskisDone);
     addTaskInput.value = "";
     addTaskTitle.value = "";
     addTaskDate.value = "";
@@ -404,12 +421,11 @@ export default class UI {
   }
   static setTaskCompleted(taskButton) {
     const projectName = document.querySelector(".project-name").textContent;
-    const taskTitle = taskButton.children[0].textContent;
-    const taskDescription = taskButton.children[2].textContent;
-    Storage.deleteTask(projectName, taskDescription);
+    const taskName = taskButton.children[2].textContent;
+    Storage.setTaskCompletion(projectName, taskName, true);
+    Storage.updateReminders();
     UI.clearTasks();
     UI.loadTasks(projectName);
-    UI.createCompletedTask(taskTitle, taskDescription);
   }
   static deleteTask(taskButton) {
     const projectName = document.querySelector(".project-name").textContent;
@@ -481,12 +497,6 @@ export default class UI {
     dueDate.classList.remove("active");
     dueDateInput.classList.remove("active");
   }
-
-  //continue here!!
-  // add new parameter for complete/incomplete tasks
-  // add all tasks with dates in reminders in TodoList.updateReminders()
-  // add Storage.updateReminders(); after adding a new task?
-
   static setTaskDate() {
     const taskButton = this.parentNode.parentNode;
     const projectName = document.querySelector(".project-name").textContent;
@@ -499,6 +509,7 @@ export default class UI {
       return;
     }
     Storage.setTaskDate(projectName, taskName, newDueDate);
+    Storage.updateReminders();
     UI.clearTasks();
     UI.loadTasks(projectName);
     UI.closeSetDateInput(taskButton);
@@ -523,6 +534,7 @@ export default class UI {
     const taskName = taskButton.children[2].textContent;
     const newColor = this.value;
     Storage.setTaskColor(projectName, taskName, newColor);
+    Storage.updateReminders();
     UI.clearTasks();
     UI.loadTasks(projectName);
     UI.closeSetColorInput(taskButton);

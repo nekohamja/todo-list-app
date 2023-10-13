@@ -75,6 +75,12 @@ export default class Storage {
     Storage.saveTodoList(todoList);
   }
 
+  static setTaskCompletion(projectName, taskName, newValue) {
+    const todoList = Storage.getTodoList();
+    todoList.getProject(projectName).getTask(taskName).setisDone(newValue);
+    Storage.saveTodoList(todoList);
+  }
+
   static updateReminders() {
     const todoList = Storage.getTodoList();
     todoList.updateReminders();
