@@ -1,4 +1,4 @@
-import { add, format, isBefore, parseISO } from "date-fns";
+import { format, isBefore } from "date-fns";
 import Storage from "./Storage";
 import Project from "./Projects";
 import Task from "./Task";
@@ -296,12 +296,17 @@ export default class UI {
     const taskTitle = addTaskTitle.value;
     const taskName = addTaskInput.value;
     const taskColor = addTaskColor.value;
-    const taskDate = format(new Date(addTaskDate.value), "dd/MM/yyyy");
+    const taskDate =
+      addTaskDate.value === ""
+        ? ""
+        : format(new Date(addTaskDate.value), "dd/MM/yyyy");
 
-    if (isBefore(new Date(addTaskDate.value), new Date())) {
-      alert("Date is already in the past.");
-      addTaskDate.value = "";
-      return;
+    if (addTaskDate.value !== "") {
+      if (isBefore(new Date(addTaskDate.value), new Date())) {
+        alert("Date is already in the past.");
+        addTaskDate.value = "";
+        return;
+      }
     }
 
     if (taskName === "") {
@@ -347,10 +352,6 @@ export default class UI {
       UI.closeAddTaskPopup();
     }
   }
-
-  //continue here!!
-  // add class for completed tasks
-  // add all tasks with dates in reminders
 
   // TASK EVENT LISTENER
   static initTaskButtons() {
@@ -480,11 +481,23 @@ export default class UI {
     dueDate.classList.remove("active");
     dueDateInput.classList.remove("active");
   }
+
+  //continue here!!
+  // add new parameter for complete/incomplete tasks
+  // add all tasks with dates in reminders in TodoList.updateReminders()
+  // add Storage.updateReminders(); after adding a new task?
+
   static setTaskDate() {
     const taskButton = this.parentNode.parentNode;
     const projectName = document.querySelector(".project-name").textContent;
     const taskName = taskButton.children[2].textContent;
+    const dueDateInput = taskButton.children[4].children[2];
     const newDueDate = format(new Date(this.value), "dd/MM/yyyy");
+    if (isBefore(new Date(this.value), new Date())) {
+      alert("Date is already in the past.");
+      dueDateInput.value = "";
+      return;
+    }
     Storage.setTaskDate(projectName, taskName, newDueDate);
     UI.clearTasks();
     UI.loadTasks(projectName);
